@@ -1,0 +1,92 @@
+_schema-version: "3.2"
+ID: zfioridemoui5
+version: 0.0.1
+modules:
+- name: zfioridemoui5-destination-content
+  type: com.sap.application.content
+  requires:
+  - name: zfioridemoui5-destination-service
+    parameters:
+      content-target: true
+  - name: zfioridemoui5_html_repo_host
+    parameters:
+      service-key:
+        name: zfioridemoui5_html_repo_host-key
+  - name: uaa_zfioridemoui5
+    parameters:
+      service-key:
+        name: uaa_zfioridemoui5-key
+  parameters:
+    content:
+      instance:
+        destinations:
+        - Name: zfioridemoui5_zfioridemoui5_html_repo_host
+          ServiceInstanceName: zfioridemoui5-html5-app-host-service
+          ServiceKeyName: zfioridemoui5_html_repo_host-key
+          sap.cloud.service: zfioridemoui5
+        - Authentication: OAuth2UserTokenExchange
+          Name: zfioridemoui5_uaa_zfioridemoui5
+          ServiceInstanceName: zfioridemoui5-xsuaa-service
+          ServiceKeyName: uaa_zfioridemoui5-key
+          sap.cloud.service: zfioridemoui5
+        existing_destinations_policy: ignore
+  build-parameters:
+    no-source: true
+- name: zfioridemoui5-app-content
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: zfioridemoui5_html_repo_host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - publicapp.zip
+      name: publicapp
+      target-path: resources/
+- name: publicapp
+  type: html5
+  path: publicapp
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+resources:
+- name: zfioridemoui5-destination-service
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: true
+      init_data:
+        instance:
+          destinations:
+          - Authentication: NoAuthentication
+            Name: ui5
+            ProxyType: Internet
+            Type: HTTP
+            URL: https://ui5.sap.com
+          existing_destinations_policy: update
+      version: 1.0.0
+    service: destination
+    service-name: zfioridemoui5-destination-service
+    service-plan: lite
+- name: zfioridemoui5_html_repo_host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: zfioridemoui5-html5-app-host-service
+    service-plan: app-host
+- name: uaa_zfioridemoui5
+  type: org.cloudfoundry.managed-service
+  parameters:
+    path: ./xs-security.json
+    service: xsuaa
+    service-name: zfioridemoui5-xsuaa-service
+    service-plan: application
+parameters:
+  deploy_mode: html5-repo
