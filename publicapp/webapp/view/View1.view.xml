@@ -7,7 +7,7 @@
     <Shell id="shell">
         <App id="app">
             <pages>
-                <Page id="page" title="Welcome fiori">
+                <Page id="page" title="Welcome fiori test for BTP CICD">
                     <content />
                 </Page>
             </pages>
